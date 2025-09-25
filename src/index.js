@@ -19,8 +19,10 @@ import { env } from './config/env.js';
 import hrScreenerRouter from './routes/hrScreener.js';
 import hrApplicationsRouter from './routes/hrApplications.js';
 import offersRouter from './routes/offers.js';
+import applicationsRouter from './routes/applications.js';
 
 dotenv.config();
+// nodemon restart trigger: env updated for remote MongoDB
 
 const app = express();
 
@@ -64,6 +66,7 @@ app.use('/dashboard', dashboardRouter);
 app.use('/hr/screener', hrScreenerRouter);
 app.use('/hr/applications', hrApplicationsRouter);
 app.use('/offers', offersRouter);
+app.use('/applications', applicationsRouter);
 
 // 404
 app.use((req, res) => {

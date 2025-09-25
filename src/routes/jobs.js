@@ -16,6 +16,16 @@ router.post('/', requireAuth, requireRole('HR', 'IT', 'Manager', 'Admin'), async
   }
 });
 
+// Public list of jobs (no auth)
+router.get('/public', async (req, res) => {
+  try {
+    const jobs = await Job.find().sort({ createdAt: -1 }).select('title department jdText createdAt');
+    res.json(jobs);
+  } catch (e) {
+    res.status(500).json({ message: 'Failed to fetch jobs' });
+  }
+});
+
 // List jobs
 router.get('/', requireAuth, async (req, res) => {
   try {

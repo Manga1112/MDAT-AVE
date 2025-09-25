@@ -3,6 +3,7 @@ import { Routes, Route, Link } from 'react-router-dom';
 import { useState } from 'react';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 import ProtectedRoute from './components/ProtectedRoute';
 import HRDashboard from './pages/HRDashboard';
 import ITDashboard from './pages/ITDashboard';
@@ -57,6 +58,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
         <Route element={<ProtectedRoute allow={["HR", "Admin"]} />}> 
           <Route path="/hr" element={<HRDashboard />} />

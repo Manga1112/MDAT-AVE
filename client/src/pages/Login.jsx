@@ -64,6 +64,11 @@ export default function Login() {
           {error && <div style={{ color: '#fecaca' }}>{error}</div>}
           <Button variant="primary" type="submit">Sign in</Button>
         </form>
+        {hintRole === 'Candidate' && (
+          <div className="sub" style={{ marginTop: 10 }}>
+            New candidate? <a href="/signup">Create an account and upload resume</a>
+          </div>
+        )}
       </div>
     </div>
   );

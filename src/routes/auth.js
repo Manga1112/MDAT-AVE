@@ -1,10 +1,15 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
 import User from '../models/User.js';
+import Candidate from '../models/Candidate.js';
+import Resume from '../models/Resume.js';
+import { uploadFileToGridFS } from '../services/gridfs.js';
 import { env } from '../config/env.js';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 function signTokens(user) {
   const access = jwt.sign({ id: user._id, role: user.role, username: user.username }, env.jwtSecret, { expiresIn: env.jwtExpiresIn });
@@ -12,20 +17,53 @@ function signTokens(user) {
   return { access, refresh };
 }
 
-// Public candidate registration using username + password (email optional)
-router.post('/register', async (req, res) => {
+// Public candidate registration with resume upload
+router.post('/register', upload.single('resume'), async (req, res) => {
   try {
     const { username, password, email, name, phone } = req.body;
-    if (!username || !password) return res.status(400).json({ message: 'Username and password required' });
-    const exists = await User.findOne({ username });
-    if (exists) return res.status(409).json({ message: 'Username already in use' });
+    if (!username || !password || !name || !email) {
+      return res.status(400).json({ message: 'Username, password, name, and email are required' });
+    }
+    
+    const exists = await User.findOne({ $or: [{ username }, { email }] });
+    if (exists) return res.status(409).json({ message: 'Username or email already in use' });
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = await User.create({ username, email, passwordHash, role: 'Candidate', department: 'Candidate' });
-    // Optionally create Candidate profile
-    const tokens = signTokens(user);
-    res.status(201).json({ user: { id: user._id, username: user.username, role: user.role }, tokens });
+    const user = await User.create({ 
+      username, 
+      email, 
+      passwordHash, 
+      role: 'Candidate', 
+      department: null,
+      name 
+    });
+
+    // Create candidate profile
+    const candidate = await Candidate.create({
+      userId: user._id,
+      name,
+      email,
+      phone: phone || '',
+      location: '',
+      skills: [],
+      experience: ''
+    });
+
+    // Upload resume if provided
+    if (req.file) {
+      const fileId = await uploadFileToGridFS(req.file.buffer, req.file.originalname, req.file.mimetype);
+      await Resume.create({
+        candidateId: candidate._id,
+        filename: req.file.originalname,
+        contentType: req.file.mimetype,
+        fileId,
+        uploadedBy: user._id
+      });
+    }
+
+    res.status(201).json({ message: 'Registration successful. Please login.' });
   } catch (e) {
+    console.error(e);
     res.status(500).json({ message: 'Registration failed' });
   }
 });

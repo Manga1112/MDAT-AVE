@@ -22,7 +22,7 @@ router.get('/results', requireAuth, requireRole('HR', 'Manager', 'Admin'), async
   try {
     const jobId = parseJobId(req.query.job_id);
     if (!jobId) return res.json([]);
-    const results = await Screening.find({ jobId }).sort({ createdAt: -1 }).limit(200).lean();
+    const results = await Screening.find({ jobId }).sort({ score: -1, createdAt: -1 }).limit(10).lean();
     const normalized = results.map(r => ({
       id: String(r._id),
       application_id: String(r._id),

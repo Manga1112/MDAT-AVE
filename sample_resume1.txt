@@ -1,0 +1,1 @@
+﻿Experienced software engineer with projects in Node.js, React, and MongoDB. Built REST APIs and microservices. Worked on cloud deployments and CI/CD.
