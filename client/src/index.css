@@ -1,0 +1,125 @@
+:root {
+  --bg-grad: radial-gradient(1200px 800px at 10% 0%, #0f172a 0%, #020617 50%, #000 100%);
+  --card-shadow: 0 10px 25px rgba(0,0,0,0.25);
+  --ring: 0 0 0 2px rgba(255,255,255,0.15) inset;
+
+  --grad-hr: linear-gradient(135deg, #ff6b6b 0%, #f06595 50%, #845ef7 100%);
+  --grad-it: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+  --grad-manager: linear-gradient(135deg, #34d399 0%, #059669 100%);
+  --grad-finance: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  --grad-candidate: linear-gradient(135deg, #a78bfa 0%, #6366f1 100%);
+  --grad-admin: linear-gradient(135deg, #f472b6 0%, #ec4899 50%, #8b5cf6 100%);
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  color: #e5e7eb;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background: var(--bg-grad);
+  background-attachment: fixed;
+}
+
+a { color: inherit; }
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.cards {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.card {
+  position: relative;
+  border-radius: 14px;
+  padding: 22px;
+  color: white;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease, background .2s ease;
+  animation: fade-in .35s ease both;
+}
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  box-shadow: var(--ring);
+  pointer-events: none;
+}
+.card:hover { transform: translateY(-4px) scale(1.01); filter: saturate(1.1); }
+.card .label { font-weight: 700; font-size: 18px; letter-spacing: .3px; }
+.card .sub { opacity: .9; font-size: 12px; margin-top: 4px; }
+.icon {
+  font-size: 26px; line-height: 1; margin-bottom: 10px;
+}
+
+.grad-hr { background: var(--grad-hr); }
+.grad-it { background: var(--grad-it); }
+.grad-manager { background: var(--grad-manager); }
+.grad-finance { background: var(--grad-finance); }
+.grad-candidate { background: var(--grad-candidate); }
+.grad-admin { background: var(--grad-admin); }
+
+.header {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 20px; backdrop-filter: blur(8px);
+  background: linear-gradient(90deg, rgba(99,102,241,0.2), rgba(236,72,153,0.1));
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.brand { font-weight: 800; letter-spacing: .3px; }
+.spacer { flex: 1; }
+.btn {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  color: #fff; padding: 8px 12px; border-radius: 10px; cursor: pointer;
+}
+.btn:hover { background: rgba(255,255,255,0.12); }
+
+/* Forms */
+input, select, textarea {
+  font: inherit;
+  color: inherit;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.6); }
+
+/* Animations */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Light theme */
+[data-theme="light"] body {
+  color: #0f172a;
+}
+[data-theme="light"] {
+  --bg-grad: radial-gradient(1200px 800px at 10% 0%, #f1f5f9 0%, #e2e8f0 50%, #e5e7eb 100%);
+}
+[data-theme="light"] .header {
+  background: linear-gradient(90deg, rgba(79,70,229,0.08), rgba(236,72,153,0.06));
+  border-bottom-color: rgba(15,23,42,0.08);
+}
+[data-theme="light"] .btn {
+  background: rgba(15,23,42,0.05);
+  color: #0f172a;
+  border-color: rgba(15,23,42,0.15);
+}
+[data-theme="light"] .card {
+  color: #0f172a;
+}
+[data-theme="light"] input, [data-theme="light"] select, [data-theme="light"] textarea {
+  background: rgba(15,23,42,0.03);
+  border-color: rgba(15,23,42,0.15);
+}
