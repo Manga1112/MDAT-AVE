@@ -3,8 +3,22 @@ import multer from 'multer';
 import { env } from '../config/env.js';
 import mime from 'mime-types';
 
+function withDbName(uri) {
+  try {
+    const u = new URL(uri);
+    // If no db name present (pathname is '/' or empty), default to automation_hub
+    if (!u.pathname || u.pathname === '/' ) {
+      u.pathname = '/automation_hub';
+    }
+    return u.toString();
+  } catch {
+    // Fallback to original if parsing fails
+    return uri;
+  }
+}
+
 const storage = new GridFsStorage({
-  url: env.mongoUri,
+  url: withDbName(env.mongoUri),
   file: (req, file) => {
     const ext = mime.extension(file.mimetype) || 'bin';
     return {

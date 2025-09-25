@@ -4,6 +4,7 @@ import { requireAuth, requireRole } from '../middleware/auth.js';
 import Approval from '../models/Approval.js';
 import Ticket from '../models/Ticket.js';
 import AuditLog from '../models/AuditLog.js';
+import { notify } from '../services/notifier.js';
 
 const router = Router();
 
@@ -32,6 +33,15 @@ router.post('/:ticketId', requireAuth, requireRole('HR', 'Manager', 'Admin'), as
       targetId: String(ticket._id),
       before,
       after: { status: ticket.status },
+    });
+
+    // Notify requester and team about approval decision
+    notify('ticket_approval_decision', {
+      ticketId: String(ticket._id),
+      status: ticket.status,
+      approverId: req.user.id,
+      comments: comments || '',
+      department: ticket.department,
     });
 
     res.status(201).json({ approval, ticket });

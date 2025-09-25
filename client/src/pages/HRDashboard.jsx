@@ -2,19 +2,16 @@ import { useEffect, useState } from 'react';
 import api from '../api/client';
 import TicketsPanel from '../components/TicketsPanel.jsx';
 import OffersPanel from '../components/OffersPanel.jsx';
-import ApplicationsList from '../components/ApplicationsList.jsx';
 
 export default function HRDashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [jobs, setJobs] = useState([]);
-  const [candidateId, setCandidateId] = useState('');
   const [jobId, setJobId] = useState('');
   const [screenings, setScreenings] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   // New states per reference
-  const [candidateIdsBulk, setCandidateIdsBulk] = useState('');
   const [running, setRunning] = useState(false);
   const [enqJobId, setEnqJobId] = useState('');
   const [enqStatus, setEnqStatus] = useState('');
@@ -41,22 +38,6 @@ export default function HRDashboard() {
     load();
   }, []);
 
-  const runScreening = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      await api.post('/screenings/run', { candidateId, jobId });
-      await load();
-      setCandidateId('');
-      // setJobId(''); keep selected
-    } catch (e) {
-      setError(e?.response?.data?.message || 'Screening failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Reference: run bulk screening for a job and optional candidate ids
   const runBulkScreening = async () => {
     if (!jobId) {
@@ -67,12 +48,7 @@ export default function HRDashboard() {
     setRunning(true);
     setScreenings([]);
     try {
-      const body = { job_id: jobId };
-      if (candidateIdsBulk.trim()) {
-        // allow comma-separated ObjectIds
-        body.candidate_ids = candidateIdsBulk.split(',').map(x => x.trim()).filter(Boolean);
-      }
-      await api.post('/hr/screener/run', body);
+      await api.post('/hr/screener/run', { job_id: jobId });
       const r = await api.get('/hr/screener/results', { params: { job_id: jobId } });
       setScreenings(r.data || []);
     } catch (e) {
@@ -171,12 +147,7 @@ export default function HRDashboard() {
       <section style={{ margin: '16px 0', display: 'grid', gap: 16, gridTemplateColumns: '1.1fr 1fr' }}>
         <div className="card" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="label" style={{ marginBottom: 8 }}>Resume Screener</div>
-          {/* Single candidate screening (existing) */}
-          <form onSubmit={runScreening} style={{ display: 'grid', gap: 10 }}>
-            <div>
-              <label className="sub">Candidate ID</label>
-              <input value={candidateId} onChange={(e) => setCandidateId(e.target.value)} required style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(0,0,0,0.2)', color: '#fff' }} />
-            </div>
+          <div style={{ display: 'grid', gap: 10 }}>
             <div>
               <label className="sub">Job</label>
               <select value={jobId} onChange={(e) => setJobId(e.target.value)} required style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(0,0,0,0.2)', color: '#fff' }}>
@@ -186,18 +157,9 @@ export default function HRDashboard() {
                 ))}
               </select>
             </div>
-            <button className="btn" type="submit" disabled={loading}>{loading ? 'Screening...' : 'Run Screening'}</button>
-          </form>
-
-          {/* Bulk screening controls per reference */}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: 12, paddingTop: 12, display: 'grid', gap: 10 }}>
-            <div>
-              <label className="sub">Candidate IDs (optional, comma-separated)</label>
-              <input value={candidateIdsBulk} onChange={(e) => setCandidateIdsBulk(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(0,0,0,0.2)', color: '#fff' }} />
-            </div>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn" onClick={runBulkScreening} disabled={running}>{running ? 'Screening…' : 'Run Resume Screening'}</button>
-              <button className="btn" onClick={enqueueScreening}>Enqueue Job</button>
+              <button className="btn" onClick={runBulkScreening} disabled={running || !jobId}>{running ? 'Screening…' : 'Run Resume Screening'}</button>
+              <button className="btn" onClick={enqueueScreening} disabled={!jobId}>Enqueue Job</button>
             </div>
             {enqJobId && (
               <div className="sub">
@@ -242,19 +204,10 @@ export default function HRDashboard() {
         </div>
       </section>
 
-      <section className="card" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', marginBottom: 16 }}>
-        <div className="label" style={{ marginBottom: 8 }}>Applications</div>
-        <ApplicationsList onSelectApplication={(cid) => setCandidateId(cid)} selectedCandidateId={candidateId} />
-        <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-          <button className="btn" onClick={(e)=>{ if (candidateId && jobId) runScreening(e); }} disabled={!candidateId || !jobId || loading}>
-            {loading ? 'Screening…' : 'Screen Selected Application'}
-          </button>
-        </div>
-      </section>
 
       <section className="card" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', marginBottom: 16 }}>
         <div className="label" style={{ marginBottom: 8 }}>Offers</div>
-        <OffersPanel candidateId={candidateId || undefined} jobId={jobId || undefined} />
+        <OffersPanel jobId={jobId || undefined} />
       </section>
 
       <section style={{ margin: '16px 0' }}>

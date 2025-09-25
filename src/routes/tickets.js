@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import { requireAuth } from '../middleware/auth.js';
 import Ticket from '../models/Ticket.js';
 import AuditLog from '../models/AuditLog.js';
+import { notify } from '../services/notifier.js';
+import User from '../models/User.js';
 
 const router = Router();
 
@@ -13,6 +15,17 @@ router.post('/', requireAuth, async (req, res) => {
     if (!department || !type || !title) return res.status(400).json({ message: 'Missing fields' });
     const ticket = await Ticket.create({ createdBy: req.user.id, department, type, title, description });
     await AuditLog.create({ actorId: req.user.id, action: 'ticket:create', targetType: 'Ticket', targetId: String(ticket._id) });
+    // Notify requester and team based on department
+    const requester = await User.findById(req.user.id).lean();
+    const teamEnv = department === 'IT' ? process.env.IT_TEAM_EMAIL : department === 'HR' ? process.env.HR_TEAM_EMAIL : department === 'Finance' ? process.env.FINANCE_TEAM_EMAIL : '';
+    const recipients = [requester?.email, teamEnv].filter(Boolean);
+    notify('ticket_created', {
+      ticketId: String(ticket._id),
+      department,
+      title,
+      createdBy: req.user.id,
+      to: recipients,
+    });
     res.status(201).json(ticket);
   } catch (e) {
     res.status(500).json({ message: 'Failed to create ticket' });
@@ -36,15 +49,27 @@ router.get('/', requireAuth, async (req, res) => {
 // Update status
 router.patch('/:id/status', requireAuth, async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, comment } = req.body;
     if (!status) return res.status(400).json({ message: 'Missing status' });
     const ticket = await Ticket.findById(req.params.id);
     if (!ticket) return res.status(404).json({ message: 'Not found' });
     const before = { status: ticket.status };
     ticket.status = status;
-    ticket.history.push({ at: new Date(), by: req.user.id, status });
+    ticket.history.push({ at: new Date(), by: req.user.id, status, comment });
     await ticket.save();
     await AuditLog.create({ actorId: req.user.id, action: 'ticket:update_status', targetType: 'Ticket', targetId: String(ticket._id), before, after: { status } });
+    // Notify requester and team of status change
+    const requester = await User.findById(ticket.createdBy).lean();
+    const teamEnv = ticket.department === 'IT' ? process.env.IT_TEAM_EMAIL : ticket.department === 'HR' ? process.env.HR_TEAM_EMAIL : ticket.department === 'Finance' ? process.env.FINANCE_TEAM_EMAIL : '';
+    const recipients = [requester?.email, teamEnv].filter(Boolean);
+    notify('ticket_status_changed', {
+      ticketId: String(ticket._id),
+      status,
+      department: ticket.department,
+      updatedBy: req.user.id,
+      comment: comment || '',
+      to: recipients,
+    });
     res.json(ticket);
   } catch (e) {
     res.status(500).json({ message: 'Failed to update status' });

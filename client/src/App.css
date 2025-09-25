@@ -40,3 +40,204 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Navbar */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand { font-weight: 800; }
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Layout helpers */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.btn {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform .08s ease, box-shadow .2s ease;
+}
+.btn:hover { box-shadow: 0 6px 16px rgba(124,58,237,.35); }
+.btn:active { transform: translateY(1px); }
+.btn.secondary {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+/* Inputs */
+input, select, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.25);
+  color: #fff;
+}
+label { display: block; font-size: 12px; opacity: .85; margin-bottom: 6px; }
+
+/* Cards */
+.panel {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  padding: 16px;
+}
+.panel.transparent { background: rgba(255,255,255,0.03); }
+.panel-title { font-weight: 700; margin: 0 0 6px; }
+.panel-sub { opacity: .8; font-size: 13px; }
+
+/* Candidate Portal */
+.cp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.cp-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .cp-grid { grid-template-columns: 1fr; }
+}
+.job-item { border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; }
+.muted { color: rgba(255,255,255,0.75); font-size: 13px; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); font-size: 12px; }
+
+/* Landing cards */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 1100px) {
+  .cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  .cards-grid { grid-template-columns: 1fr; }
+}
+.card-link { text-decoration: none; }
+.dept-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  height: 150px;
+  overflow: hidden;
+  transition: transform .1s ease, box-shadow .2s ease;
+}
+.dept-card:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
+.dept-card__icon { font-size: 28px; }
+.dept-card__title { font-size: 18px; font-weight: 700; margin-top: 6px; }
+.dept-card__sub { opacity: .9; font-size: 13px; margin-top: 4px; }
+
+/* Simple gradient accents by department */
+.grad-hr { background: linear-gradient(135deg, rgba(16,185,129,0.18), rgba(16,185,129,0.03)); }
+.grad-it { background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(59,130,246,0.03)); }
+.grad-manager { background: linear-gradient(135deg, rgba(234,179,8,0.2), rgba(234,179,8,0.03)); }
+.grad-finance { background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(99,102,241,0.03)); }
+.grad-candidate { background: linear-gradient(135deg, rgba(244,63,94,0.2), rgba(244,63,94,0.03)); }
+.grad-admin { background: linear-gradient(135deg, rgba(147,51,234,0.22), rgba(147,51,234,0.04)); }
+
+/* Animated brand title */
+.brand-title {
+  background-size: 300% 300% !important;
+  animation: brand-gradient-move 6s ease infinite;
+}
+@keyframes brand-gradient-move {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Deck entrance animation */
+.deck-animated .dept-card {
+  opacity: 0;
+  transform: translateY(8px) scale(0.99);
+  animation: deck-in .5s cubic-bezier(.2,.7,.2,1) forwards;
+}
+.deck-animated .dept-card:nth-child(1) { animation-delay: .02s; }
+.deck-animated .dept-card:nth-child(2) { animation-delay: .06s; }
+.deck-animated .dept-card:nth-child(3) { animation-delay: .10s; }
+.deck-animated .dept-card:nth-child(4) { animation-delay: .14s; }
+.deck-animated .dept-card:nth-child(5) { animation-delay: .18s; }
+.deck-animated .dept-card:nth-child(6) { animation-delay: .22s; }
+@keyframes deck-in {
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Quotes marquee */
+.marquee {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+}
+.marquee__track {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 10px 0;
+  animation: marquee-move 12s linear infinite;
+}
+.marquee__text { padding: 0 24px; opacity: .95; }
+@keyframes marquee-move {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+/* Marquee enhancements */
+.marquee:hover .marquee__track { animation-play-state: paused; }
+.marquee { box-shadow: 0 6px 18px rgba(0,0,0,0.25); }
+
+/* Typewriter */
+.typewriter .caret {
+  margin-left: 2px;
+  animation: caret-blink 1s steps(1, end) infinite;
+}
+@keyframes caret-blink { 50% { opacity: 0; } }
+
+/* Footer */
+.app-footer {
+  position: relative;
+  margin-top: 28px;
+  padding: 16px 0;
+  opacity: .95;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.25);
+}
+.app-footer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6);
+}
+.app-footer .brand-title { font-size: 16px; }
+.footer-content { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.footer-left { display: flex; align-items: center; gap: 8px; }
+.footer-tagline { opacity: .85; font-size: 13px; }
+.footer-right { display: flex; align-items: center; gap: 8px; }
+.footer-link { color: inherit; opacity: .85; text-decoration: none; }
+.footer-link:hover { opacity: 1; text-decoration: underline; }
+
+

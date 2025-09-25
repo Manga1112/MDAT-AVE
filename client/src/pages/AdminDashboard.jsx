@@ -16,6 +16,7 @@ export default function AdminDashboard() {
     Manager: 'Management',
     Finance: 'Finance',
     Candidate: 'Candidate',
+    Employee: '',
   };
 
   useEffect(() => {
@@ -64,6 +65,7 @@ export default function AdminDashboard() {
               <option>Manager</option>
               <option>Finance</option>
               <option>Candidate</option>
+              <option>Employee</option>
               <option>Admin</option>
             </select>
           </div>
