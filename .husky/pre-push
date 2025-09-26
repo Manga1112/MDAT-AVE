@@ -1,0 +1,18 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Block pushes that include .env files in history of the to-be-pushed commits
+# This is a lightweight check of the staged tree; server-side protection remains the final guard.
+if git diff --cached --name-only | grep -E '(^|/)\.env(\..*)?$|^client/\.env(\..*)?$' >/dev/null; then
+  echo "\n[HUSKY] Blocked push: .env files are staged. Unstage them before pushing."
+  exit 1
+fi
+
+# Quick scan of the last commit contents for likely secrets
+LAST_COMMIT=$(git rev-parse HEAD)
+if git show "$LAST_COMMIT" | grep -Ei '(GMAIL_REFRESH_TOKEN|GOOGLE_OAUTH|CLIENT_SECRET|refresh_token|API_KEY|BEGIN RSA PRIVATE KEY|BEGIN PRIVATE KEY|AKIA[0-9A-Z]{16})' >/dev/null; then
+  echo "\n[HUSKY] Warning: potential secret detected in last commit. Please verify."
+  # Do not hard block here to allow urgent pushes, rely on server-side protection too.
+fi
+
+exit 0

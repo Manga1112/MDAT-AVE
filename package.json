@@ -8,7 +8,8 @@
     "start": "node src/index.js",
     "lint": "eslint .",
     "seed:admin": "node scripts/seedAdmin.js",
-    "fix:indexes": "node scripts/fixUserIndexes.js"
+    "fix:indexes": "node scripts/fixUserIndexes.js",
+    "prepare": "husky install"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -37,6 +38,7 @@
   "devDependencies": {
     "eslint": "^9.11.1",
     "nodemon": "^3.1.4",
-    "pino-pretty": "^11.2.2"
+    "pino-pretty": "^11.2.2",
+    "husky": "^9.0.11"
   }
 }
