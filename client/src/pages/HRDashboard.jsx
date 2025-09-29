@@ -396,15 +396,54 @@ export default function HRDashboard() {
       <section style={{ margin: '16px 0', display: 'grid', gap: 16, gridTemplateColumns: '1.1fr 1fr' }}>
         <div className="card" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="label" style={{ marginBottom: 8 }}>Activity</div>
-          <ol style={{ position: 'relative', borderLeft: '1px solid rgba(255,255,255,0.12)', paddingLeft: 16, display: 'grid', gap: 12 }}>
-            {(screenings || []).slice(0, 5).map((s, i) => (
-              <li key={s.id || s._id || i} className="sub" style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: -6.5, top: 6, width: 10, height: 10, borderRadius: '50%', background: 'linear-gradient(135deg,#4f46e5,#8b5cf6)', border: '1px solid rgba(255,255,255,0.35)' }} />
-                <div style={{ fontWeight: 600 }}>Screening {s.status || '-'} for {s.candidate_name || s.candidateId || 'Candidate'}</div>
-                <div className="sub" style={{ fontSize: 12 }}>Score: {s.overall_score ?? s.score ?? '-'}{s.rationale ? ` • ${String(s.rationale).slice(0, 80)}...` : ''}</div>
-              </li>
-            ))}
-          </ol>
+          <div style={{ display: 'grid', gap: 10 }}>
+            {(() => {
+              const items = (screenings || []).slice(0, 6);
+              if (!items.length) return (
+                <div className="sub" style={{ opacity: .85 }}>No recent activity.</div>
+              );
+              const fmt = (d) => {
+                try { const dt = new Date(d); return isNaN(dt) ? '' : dt.toLocaleString(); } catch { return ''; }
+              };
+              const dotColor = (st) => {
+                const S = String(st || '').toLowerCase();
+                if (S === 'completed' || S === 'success') return 'linear-gradient(135deg,#22c55e,#16a34a)';
+                if (S === 'failed' || S === 'error') return 'linear-gradient(135deg,#ef4444,#f97316)';
+                return 'linear-gradient(135deg,#f59e0b,#eab308)';
+              };
+              const statusPill = (st) => {
+                const S = String(st || '').toLowerCase();
+                const base = { padding: '2px 8px', borderRadius: 999, fontSize: 11, border: '1px solid' };
+                if (S === 'completed' || S === 'success') return <span style={{ ...base, background: 'rgba(34,197,94,.16)', borderColor: 'rgba(34,197,94,.45)' }}>Completed</span>;
+                if (S === 'failed' || S === 'error') return <span style={{ ...base, background: 'rgba(244,63,94,.18)', borderColor: 'rgba(244,63,94,.5)' }}>Failed</span>;
+                return <span style={{ ...base, background: 'rgba(234,179,8,.18)', borderColor: 'rgba(234,179,8,.45)' }}>{st || 'Pending'}</span>;
+              };
+              return items.map((s, i) => {
+                const score = s.overall_score ?? s.score;
+                return (
+                  <div key={s.id || s._id || i} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 12, alignItems: 'center', padding: '10px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <span aria-hidden style={{ width: 10, height: 10, borderRadius: '50%', background: dotColor(s.status), boxShadow: '0 0 0 3px rgba(255,255,255,0.08)' }} />
+                    <div style={{ display: 'grid', gap: 4 }}>
+                      <div className="label" style={{ fontSize: 14, fontWeight: 700 }}>
+                        Screening for {s.candidate_name || s.candidateId || 'Candidate'} {statusPill(s.status)}
+                      </div>
+                      <div className="sub" style={{ fontSize: 12 }}>
+                        {typeof score === 'number' ? (
+                          <span style={{ padding: '2px 8px', borderRadius: 999, background: 'rgba(59,130,246,.18)', border: '1px solid rgba(59,130,246,.45)', marginRight: 8 }}>
+                            Score: <strong>{score}</strong>
+                          </span>
+                        ) : (
+                          <span style={{ opacity: .85 }}>Score: -</span>
+                        )}
+                        {s.rationale ? <span style={{ marginLeft: 8 }}>• {String(s.rationale).slice(0, 100)}{String(s.rationale).length > 100 ? '…' : ''}</span> : null}
+                      </div>
+                    </div>
+                    <div className="muted" style={{ fontSize: 11, textAlign: 'right' }}>{fmt(s.createdAt || s.updatedAt)}</div>
+                  </div>
+                );
+              });
+            })()}
+          </div>
         </div>
         <div className="card" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="label" style={{ marginBottom: 8 }}>Job Description</div>

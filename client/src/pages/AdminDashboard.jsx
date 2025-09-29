@@ -186,12 +186,13 @@ export default function AdminDashboard() {
   return (
     <div className="container">
       {/* Header */}
-      <div className="cp-header" style={{ marginTop: 8 }}>
+      <div className="cp-header" style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h2 style={{ margin: 0 }}>User Management</h2>
-          <div className="muted">Create users, browse, and filter by department and date.</div>
+          <div className="muted">Create, browse, and filter by department and date.</div>
         </div>
-        <div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn secondary" onClick={()=>setShowFilters(v=>!v)}>{showFilters ? 'Hide Filters' : 'Show Filters'}</button>
           <button className="btn" onClick={openNewUser}>+ New User</button>
         </div>
       </div>
@@ -201,43 +202,40 @@ export default function AdminDashboard() {
 
       {/* Filters */}
       <section className="panel">
-        <div className="panel-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>Filters</span>
-          <button className="btn secondary" onClick={()=>setShowFilters(v=>!v)}>{showFilters ? 'Hide' : 'Show'}</button>
-        </div>
+        <div className="panel-title">Filters</div>
         {showFilters && (
-        <>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr', gap: 10, marginTop: 8 }}>
-          <div>
-            <label>Name starts with</label>
-            <input placeholder="e.g., Al" value={qName} onChange={(e) => setQName(e.target.value)} />
-          </div>
-          <div>
-            <label>Department</label>
-            <select value={qDept} onChange={(e) => setQDept(e.target.value)}>
-              <option>All</option>
-              <option>IT</option>
-              <option>HR</option>
-              <option>Finance</option>
-              <option>Management</option>
-              <option>Candidate</option>
-              <option>Employee</option>
-            </select>
-          </div>
-          <div>
-            <label>Created from</label>
-            <input type="date" value={qFrom} onChange={(e) => setQFrom(e.target.value)} />
-          </div>
-          <div>
-            <label>Created to</label>
-            <input type="date" value={qTo} onChange={(e) => setQTo(e.target.value)} />
-          </div>
-        </div>
-        <div style={{ marginTop: 10 }}>
-          <button className="btn secondary" onClick={loadUsers}>Apply Filters</button>
-          <button className="btn" style={{ marginLeft: 8 }} onClick={resetFilters}>Reset</button>
-        </div>
-        </>
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.8fr 0.8fr 0.8fr', gap: 12, marginTop: 8 }}>
+              <div>
+                <label>Name or email</label>
+                <input placeholder="e.g. Alex" value={qName} onChange={(e) => setQName(e.target.value)} />
+              </div>
+              <div>
+                <label>Department</label>
+                <select value={qDept} onChange={(e) => setQDept(e.target.value)}>
+                  <option>All</option>
+                  <option>IT</option>
+                  <option>HR</option>
+                  <option>Finance</option>
+                  <option>Management</option>
+                  <option>Candidate</option>
+                  <option>Employee</option>
+                </select>
+              </div>
+              <div>
+                <label>Created from</label>
+                <input type="date" value={qFrom} onChange={(e) => setQFrom(e.target.value)} />
+              </div>
+              <div>
+                <label>Created to</label>
+                <input type="date" value={qTo} onChange={(e) => setQTo(e.target.value)} />
+              </div>
+            </div>
+            <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+              <button className="btn" onClick={loadUsers}>Apply Filters</button>
+              <button className="btn secondary" onClick={resetFilters}>Reset</button>
+            </div>
+          </>
         )}
       </section>
 
@@ -245,15 +243,16 @@ export default function AdminDashboard() {
       <section className="panel" style={{ marginTop: 16 }}>
         <div className="panel-title toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
           <span>Users ({total})</span>
-          <div className="spacer" />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input style={{ width: 220 }} placeholder="Quick search name/email" value={search} onChange={(e)=>setSearch(e.target.value)} />
-            <label className="muted">Page size</label>
-            <select value={pageSize} onChange={(e)=>{ setPageSize(parseInt(e.target.value)||10); setPage(1); }} style={{ width: 90 }}>
-              <option>10</option>
-              <option>20</option>
-              <option>50</option>
-            </select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <input style={{ width: 240 }} placeholder="Quick search name/email" value={search} onChange={(e)=>setSearch(e.target.value)} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <label className="muted">Page size</label>
+              <select value={pageSize} onChange={(e)=>{ setPageSize(parseInt(e.target.value)||10); setPage(1); }} style={{ width: 90 }}>
+                <option>10</option>
+                <option>20</option>
+                <option>50</option>
+              </select>
+            </div>
             <button className="btn" onClick={exportCsv}>Export CSV</button>
           </div>
         </div>
@@ -273,16 +272,25 @@ export default function AdminDashboard() {
             <tbody>
               {users.map(u => (
                 <tr key={u._id}>
-                  <td style={{ padding: '8px 6px' }}>{u.name || u.username}</td>
-                  <td style={{ padding: '8px 6px' }}>{u.email || '-'}</td>
-                  <td style={{ padding: '8px 6px' }}><span className={`tag tag-${String(u.department||'').toLowerCase()}`}>{u.department || '-'}</span></td>
-                  <td style={{ padding: '8px 6px' }}>{u.createdAt ? new Date(u.createdAt).toLocaleString() : '-'}</td>
-                  <td style={{ padding: '8px 6px' }}>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <button className="btn secondary" onClick={()=>onEdit(u)}>Edit</button>
-                      <button className="btn secondary" onClick={()=>onDisableToggle(u)}>{u.status === 'active' ? 'Disable' : 'Enable'}</button>
-                      <button className="btn secondary" onClick={()=>onResetPassword(u)}>Reset Password</button>
-                      <button className="btn" onClick={()=>onDelete(u)}>Delete</button>
+                  <td style={{ padding: '10px 8px' }}>
+                    <div className="label" style={{ fontWeight: 700 }}>{u.name || u.username}</div>
+                    {u.username && u.name && (
+                      <div className="muted" style={{ fontSize: 12 }}>{u.username}</div>
+                    )}
+                  </td>
+                  <td style={{ padding: '10px 8px' }}>
+                    <div className="muted" style={{ fontSize: 12 }}>{u.email || '-'}</div>
+                  </td>
+                  <td style={{ padding: '10px 8px' }}>
+                    <span className={`tag tag-${String(u.department||'').toLowerCase()}`}>{u.department || '-'}</span>
+                  </td>
+                  <td style={{ padding: '10px 8px' }}>{u.createdAt ? new Date(u.createdAt).toLocaleString() : '-'}</td>
+                  <td style={{ padding: '10px 8px' }}>
+                    <div className="row-actions" style={{ display: 'flex', gap: 8 }}>
+                      <button className="btn secondary small" onClick={()=>onEdit(u)}>Edit</button>
+                      <button className="btn secondary small" onClick={()=>onDisableToggle(u)}>{u.status === 'active' ? 'Disable' : 'Enable'}</button>
+                      <button className="btn secondary small" onClick={()=>onResetPassword(u)}>Reset Password</button>
+                      <button className="btn danger small" onClick={()=>onDelete(u)}>Delete</button>
                     </div>
                   </td>
                 </tr>

@@ -33,3 +33,6 @@ client/.env.*
 Thumbs.db
 .vscode/
 .idea/
+
+# Local Netlify folder
+.netlify
