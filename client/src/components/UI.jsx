@@ -44,3 +44,29 @@ export function Select({ label, hint, children, style, ...rest }) {
     </div>
   );
 }
+
+export function Badge({ children, variant = 'secondary', style }) {
+  const base = {
+    padding: '2px 8px',
+    borderRadius: 999,
+    fontSize: 12,
+    display: 'inline-block',
+    border: '1px solid rgba(255,255,255,0.12)'
+  };
+  const variants = {
+    secondary: { background: 'rgba(148,163,184,0.18)', borderColor: 'rgba(148,163,184,0.35)' },
+    outline: { background: 'transparent', borderColor: 'rgba(255,255,255,0.25)' },
+    destructive: { background: 'rgba(244,63,94,0.2)', borderColor: 'rgba(244,63,94,0.5)' }
+  };
+  return <span style={{ ...base, ...(variants[variant] || {}), ...style }}>{children}</span>;
+}
+
+export function Card({ children, style, header, footer }) {
+  return (
+    <div className="card" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: 16, borderRadius: 12, ...style }}>
+      {header}
+      {children}
+      {footer}
+    </div>
+  );
+}

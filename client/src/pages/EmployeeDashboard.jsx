@@ -6,6 +6,8 @@ export default function EmployeeDashboard() {
   const [tickets, setTickets] = useState([]);
   const [dept, setDept] = useState('IT');
   const [type, setType] = useState('Issue');
+  const [category, setCategory] = useState('other');
+  const [priority, setPriority] = useState('medium');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,13 +16,51 @@ export default function EmployeeDashboard() {
   const [projName, setProjName] = useState('');
   const [projDesc, setProjDesc] = useState('');
   const [projCreating, setProjCreating] = useState(false);
+  // Ticket details/timeline state
+  const [expanded, setExpanded] = useState({}); // id -> bool
+  const [details, setDetails] = useState({}); // id -> ticket
+  const [loadingMap, setLoadingMap] = useState({}); // id -> bool
+  const [postingMap, setPostingMap] = useState({}); // id -> bool
+  const [newComment, setNewComment] = useState({}); // id -> text
 
   const loadTickets = async () => {
     try {
       const { data } = await api.get('/tickets', { params: { mine: 'true' } });
-      setTickets(data || []);
+      // Accept either an array or { items, total }
+      const items = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : [];
+      setTickets(items);
     } catch (e) {
       setError('Failed to load tickets');
+    }
+  };
+
+  const toggleDetails = async (id) => {
+    const open = !!expanded[id];
+    if (open) {
+      setExpanded((m) => ({ ...m, [id]: false }));
+      return;
+    }
+    try {
+      setLoadingMap((m) => ({ ...m, [id]: true }));
+      const { data } = await api.get(`/tickets/${id}`);
+      setDetails((m) => ({ ...m, [id]: data }));
+      setExpanded((m) => ({ ...m, [id]: true }));
+    } finally {
+      setLoadingMap((m) => ({ ...m, [id]: false }));
+    }
+  };
+
+  const addComment = async (id) => {
+    const text = String(newComment[id] || '').trim();
+    if (!text) return;
+    try {
+      setPostingMap((m) => ({ ...m, [id]: true }));
+      await api.post(`/tickets/${id}/comment`, { comment: text });
+      const { data } = await api.get(`/tickets/${id}`);
+      setDetails((m) => ({ ...m, [id]: data }));
+      setNewComment((m) => ({ ...m, [id]: '' }));
+    } finally {
+      setPostingMap((m) => ({ ...m, [id]: false }));
     }
   };
 
@@ -34,10 +74,12 @@ export default function EmployeeDashboard() {
     }
     setLoading(true);
     try {
-      const { data } = await api.post('/tickets', { department: dept, type, title, description });
+      const { data } = await api.post('/tickets', { department: dept, type, title, description, category, priority });
       setMessage(`Ticket #${data._id} created`);
       setTitle('');
       setDescription('');
+      setCategory('other');
+      setPriority('medium');
       await loadTickets();
     } catch (e) {
       setError(e?.response?.data?.message || 'Failed to create ticket');
@@ -75,14 +117,10 @@ export default function EmployeeDashboard() {
   };
 
   const resendToHigherAuthority = async (ticketId) => {
-    // Placeholder action: we simulate escalation by setting status to "Escalated"
-    // and in a real system, send emails/notifications here.
     try {
-      await api.patch(`/tickets/${ticketId}/status`, { status: 'Escalated' });
-      setMessage(`Ticket #${ticketId} escalated to higher authority`);
+      await api.post(`/tickets/${ticketId}/escalate`, { note: 'Employee requested escalation' });
+      setMessage(`Ticket #${ticketId} escalated`);
       await loadTickets();
-      // TODO: Integrate email automation service (e.g., SendGrid) here
-      // console.log('Email sent to approvers for escalation');
     } catch (e) {
       setError(e?.response?.data?.message || 'Failed to escalate');
     }
@@ -155,6 +193,25 @@ export default function EmployeeDashboard() {
               </select>
             </div>
             <div>
+              <label>Category</label>
+              <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                <option value="other">Other</option>
+                <option value="hardware">Hardware</option>
+                <option value="software">Software</option>
+                <option value="network">Network</option>
+                <option value="salary">Salary</option>
+              </select>
+            </div>
+            <div>
+              <label>Priority</label>
+              <select value={priority} onChange={(e) => setPriority(e.target.value)}>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div>
               <label>Title</label>
               <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Short summary" required />
             </div>
@@ -183,9 +240,45 @@ export default function EmployeeDashboard() {
                 <div className="tag">{t.status}</div>
               </div>
               <div className="muted" style={{ marginTop: 6 }}>{t.description}</div>
-              <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+              <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <button className="btn secondary" onClick={() => resendToHigherAuthority(t._id)}>Resend to higher authority</button>
+                <button className="btn secondary" onClick={() => toggleDetails(t._id)}>
+                  {expanded[t._id] ? 'Hide details' : (loadingMap[t._id] ? 'Loading…' : 'View details')}
+                </button>
               </div>
+              {expanded[t._id] && (
+                <div style={{ marginTop: 8, padding: 8, borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="sub" style={{ marginBottom: 6 }}>Status Timeline</div>
+                  <ol style={{ position: 'relative', borderLeft: '1px solid rgba(255,255,255,0.12)', paddingLeft: 12, display: 'grid', gap: 8 }}>
+                    {(details[t._id]?.history || []).slice().reverse().map((h, i) => (
+                      <li key={i} className="sub" style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: -6.5, top: 6, width: 10, height: 10, borderRadius: '50%', background: 'linear-gradient(135deg,#4f46e5,#8b5cf6)', border: '1px solid rgba(255,255,255,0.35)' }} />
+                        <div style={{ fontSize: 12 }}>
+                          <strong>{new Date(h.at || Date.now()).toLocaleString()}</strong>
+                          {h.status ? ` • status: ${h.status}` : ''}
+                          {h.routeStatus ? ` • routing: ${h.routeStatus}` : ''}
+                          {h.assignedTo ? ` • assigned: ${String(h.assignedTo)}` : ''}
+                          {h.escalated ? ' • escalated' : ''}
+                          {h.comment ? ` • comment: ${h.comment}` : ''}
+                        </div>
+                      </li>
+                    ))}
+                    {!(details[t._id]?.history || []).length && (
+                      <li className="sub">No history yet</li>
+                    )}
+                  </ol>
+                  <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                    <input
+                      placeholder="Add a comment"
+                      value={newComment[t._id] || ''}
+                      onChange={(e) => setNewComment((m) => ({ ...m, [t._id]: e.target.value }))}
+                    />
+                    <button className="btn" onClick={() => addComment(t._id)} disabled={!!postingMap[t._id]}>
+                      {postingMap[t._id] ? 'Posting…' : 'Comment'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
           {!tickets.length && <div className="muted">No tickets yet</div>}

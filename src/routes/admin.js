@@ -13,6 +13,7 @@ const ROLE_TO_DEFAULT_DEPT = {
   Manager: 'Management',
   Finance: 'Finance',
   Candidate: 'Candidate',
+  Employee: 'Employee',
 };
 
 // Admin creates staff accounts

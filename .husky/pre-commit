@@ -11,8 +11,9 @@ if git diff --cached --name-only |
   exit 1
 fi
 
-# Scan staged changes for possible secrets
-if git diff --cached -U0 | grep -Ei '(GMAIL_REFRESH_TOKEN|GOOGLE_OAUTH|CLIENT_SECRET|CLIENT-SECRET|refresh_token|api_key|API_KEY|BEGIN RSA PRIVATE KEY|BEGIN PRIVATE KEY|AKIA[0-9A-Z]{16})' >/dev/null; then
+# Scan staged changes for possible secrets (exclude example envs and README)
+if git diff --cached -U0 -- . ':(exclude).env.example' ':(exclude)client/.env.example' ':(exclude)README.md' \
+  | grep -Ei '(GMAIL_REFRESH_TOKEN|GOOGLE_OAUTH|CLIENT_SECRET|CLIENT-SECRET|refresh_token|api_key|API_KEY|BEGIN RSA PRIVATE KEY|BEGIN PRIVATE KEY|AKIA[0-9A-Z]{16})' >/dev/null; then
   echo "\n[HUSKY] Blocked commit: possible secret detected in staged changes."
   echo "Remove the secret and use environment variables instead."
   exit 1

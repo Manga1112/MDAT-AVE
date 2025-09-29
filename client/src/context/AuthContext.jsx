@@ -13,12 +13,35 @@ export function AuthProvider({ children }) {
     return raw ? JSON.parse(raw) : null;
   });
 
+  // Normalize role casing to a canonical value
+  const normalizeUser = (u) => {
+    if (!u || !u.role) return u;
+    const roleMap = {
+      admin: 'Admin',
+      hr: 'HR',
+      it: 'IT',
+      manager: 'Manager',
+      finance: 'Finance',
+      candidate: 'Candidate',
+      employee: 'Employee',
+    };
+    const key = String(u.role).trim().toLowerCase();
+    const normRole = roleMap[key] || u.role;
+    return normRole === u.role ? u : { ...u, role: normRole };
+  };
+
   useEffect(() => {
     if (tokens?.access) setAuthToken(tokens.access);
     else setAuthToken(null);
   }, [tokens]);
 
   useEffect(() => {
+    const nu = normalizeUser(user);
+    if (nu && nu !== user) {
+      // Update state with normalized role to keep everything consistent
+      setUser(nu);
+      return;
+    }
     if (user) localStorage.setItem('auth_user', JSON.stringify(user));
     else localStorage.removeItem('auth_user');
   }, [user]);
@@ -28,7 +51,13 @@ export function AuthProvider({ children }) {
     else localStorage.removeItem('auth_tokens');
   }, [tokens]);
 
-  const value = useMemo(() => ({ user, tokens, setUser, setTokens, logout: () => { setUser(null); setTokens(null); } }), [user, tokens]);
+  const value = useMemo(() => ({
+    user,
+    tokens,
+    setUser: (u) => setUser(normalizeUser(u)),
+    setTokens,
+    logout: () => { setUser(null); setTokens(null); },
+  }), [user, tokens]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

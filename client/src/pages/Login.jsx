@@ -43,6 +43,9 @@ export default function Login() {
         case 'Candidate':
           nav('/candidate');
           break;
+        case 'Employee':
+          nav('/employee');
+          break;
         case 'Admin':
           nav('/admin');
           break;
