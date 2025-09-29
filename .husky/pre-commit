@@ -1,10 +1,13 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-# Prevent committing environment files
-if git diff --cached --name-only | grep -E '(^|/)\.env(\..*)?$|^client/\.env(\..*)?$' >/dev/null; then
+# Prevent committing environment files (but allow .env.example)
+if git diff --cached --name-only |
+  grep -E '(^|/)\.env(\..*)?$|^client/\.env(\..*)?$' |
+  grep -v -E '(^|/)\.env\.example$|^client/\.env\.example$' >/dev/null; then
   echo "\n[HUSKY] Blocked commit: .env files must not be committed."
   echo "Add secrets to your local .env and ensure they are in .gitignore."
+  echo "Note: .env.example is allowed."
   exit 1
 fi
 

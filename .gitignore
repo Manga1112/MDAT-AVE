@@ -24,6 +24,10 @@ yarn-error.log*
 client/.env
 client/.env.*
 
+# Allow example env files to be tracked (no secrets)
+!.env.example
+!client/.env.example
+
 # OS/IDE
 .DS_Store
 Thumbs.db
